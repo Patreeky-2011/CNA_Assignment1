@@ -128,6 +128,13 @@ while True:
     # ProxyServer finds a cache hit
     # Send back response to client 
     # ~~~~ INSERT CODE ~~~~
+    cacheResponse = "HTTP/1.1 200 OK\r\n"
+    cacheResponse = "Content-Type: text/html\r\n" #Assuming only text/html types are requested for now
+    cacheResponse += "Content-Length: " + str(len(''.join(cacheData))) + "\r\n"
+    cacheResponse += "\r\n"
+    cacheResponse += ''.join(cacheData)
+
+    clientSocket.sendall(cacheResponse.encode())
     # ~~~~ END CODE INSERT ~~~~
     cacheFile.close()
     print ('Sent to the client:')
@@ -143,29 +150,29 @@ while True:
 
     print ('Connecting to:\t\t' + hostname + '\n')
     try:
-    #   # Get the IP address for a hostname
+      # Get the IP address for a hostname
       address = socket.gethostbyname(hostname)
-    #   # Connect to the origin server
-    #   # ~~~~ INSERT CODE ~~~~
+      # Connect to the origin server
+      # ~~~~ INSERT CODE ~~~~
       originServerSocket.connect((address, 80))  #Have to pass as tuple
-    #   # ~~~~ END CODE INSERT ~~~~
+      # ~~~~ END CODE INSERT ~~~~
       print ('Connected to origin Server')
 
       originServerRequest = ''
       originServerRequestHeader = ''
-    #   # Create origin server request line and headers to send
-    #   # and store in originServerRequestHeader and originServerRequest
-    #   # originServerRequest is the first line in the request and
-    #   # originServerRequestHeader is the second line in the request
-    #   # ~~~~ INSERT CODE ~~~~
+      # Create origin server request line and headers to send
+      # and store in originServerRequestHeader and originServerRequest
+      # originServerRequest is the first line in the request and
+      # originServerRequestHeader is the second line in the request
+      # ~~~~ INSERT CODE ~~~~
       originServerRequest = f"{method} {resource} HTTP/1.1\r\n"
       originServerHeader = f"Host: {hostname}\n"
       originServerHeader += f"User-Agent: Python/requests"
       originServerHeader += "Accept: */*"
       originServerHeader += "Connection: close"
-    #   # ~~~~ END CODE INSERT ~~~~
+      # ~~~~ END CODE INSERT ~~~~
 
-    #   # Construct the request to send to the origin server
+      # Construct the request to send to the origin server
       request = originServerRequest + '\r\n' + originServerRequestHeader + '\r\n\r\n'
 
       # Request the web resource from origin server

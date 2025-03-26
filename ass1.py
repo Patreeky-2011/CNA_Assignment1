@@ -101,7 +101,7 @@ while True:
   resource = '/'
 
   if len(resourceParts) == 2:
-    # Resource is absolute URI with hostname and resource
+    # Resource is absolute URI with hostname and  
     resource = resource + resourceParts[1]
 
   print ('Requested Resource:\t' + resource)
@@ -115,8 +115,12 @@ while True:
     print ('Cache location:\t\t' + cacheLocation)
 
     fileExists = os.path.isfile(cacheLocation)
-    
-    # Check wether the file is currently in the cache
+
+    #DEBUGGING STATEMENTS
+    print (f"FileExists: {fileExists}")
+    # print (f"Cache Location: {cacheLocation}")
+
+    # Check whether the file is currently in the cache
     cacheFile = open(cacheLocation, "r")
     cacheData = cacheFile.readlines()
 
@@ -134,27 +138,34 @@ while True:
     # Create a socket to connect to origin server
     # and store in originServerSocket
     # ~~~~ INSERT CODE ~~~~
+    originServerSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     # ~~~~ END CODE INSERT ~~~~
 
     print ('Connecting to:\t\t' + hostname + '\n')
     try:
-      # Get the IP address for a hostname
+    #   # Get the IP address for a hostname
       address = socket.gethostbyname(hostname)
-      # Connect to the origin server
-      # ~~~~ INSERT CODE ~~~~
-      # ~~~~ END CODE INSERT ~~~~
+    #   # Connect to the origin server
+    #   # ~~~~ INSERT CODE ~~~~
+      originServerSocket.connect(address, 80)
+    #   # ~~~~ END CODE INSERT ~~~~
       print ('Connected to origin Server')
 
       originServerRequest = ''
       originServerRequestHeader = ''
-      # Create origin server request line and headers to send
-      # and store in originServerRequestHeader and originServerRequest
-      # originServerRequest is the first line in the request and
-      # originServerRequestHeader is the second line in the request
-      # ~~~~ INSERT CODE ~~~~
-      # ~~~~ END CODE INSERT ~~~~
+    #   # Create origin server request line and headers to send
+    #   # and store in originServerRequestHeader and originServerRequest
+    #   # originServerRequest is the first line in the request and
+    #   # originServerRequestHeader is the second line in the request
+    #   # ~~~~ INSERT CODE ~~~~
+      originServerRequest = f"{method} {resource} HTTP/1.1\r\n"
+      originServerHeader = f"Host: {hostname}\n"
+      originServerHeader += f"User-Agent: Python/requests"
+      originServerHeader += "Accept: */*"
+      originServerHeader += "Connection: close"
+    #   # ~~~~ END CODE INSERT ~~~~
 
-      # Construct the request to send to the origin server
+    #   # Construct the request to send to the origin server
       request = originServerRequest + '\r\n' + originServerRequestHeader + '\r\n\r\n'
 
       # Request the web resource from origin server

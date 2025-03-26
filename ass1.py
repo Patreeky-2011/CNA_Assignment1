@@ -113,7 +113,7 @@ while True:
         cacheLocation = cacheLocation + 'default'
 
     print ('Cache location:\t\t' + cacheLocation)
-
+  
     fileExists = os.path.isfile(cacheLocation)
 
     #DEBUGGING STATEMENTS
@@ -147,7 +147,7 @@ while True:
       address = socket.gethostbyname(hostname)
     #   # Connect to the origin server
     #   # ~~~~ INSERT CODE ~~~~
-      originServerSocket.connect(address, 80)
+      originServerSocket.connect((address, 80))  #Have to pass as tuple
     #   # ~~~~ END CODE INSERT ~~~~
       print ('Connected to origin Server')
 

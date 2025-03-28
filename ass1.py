@@ -117,7 +117,7 @@ while True:
     fileExists = os.path.isfile(cacheLocation)
 
     #DEBUGGING STATEMENTS
-    print (f"FileExists: {fileExists}")
+    # print (f"FileExists: {fileExists}")
     # print (f"Cache Location: {cacheLocation}")
 
     # Check whether the file is currently in the cache
@@ -133,12 +133,13 @@ while True:
     cacheResponse += "Content-Length: " + str(len(''.join(cacheData))) + "\r\n"
     cacheResponse += "\r\n"
     cacheResponse += ''.join(cacheData)
-
     clientSocket.sendall(cacheResponse.encode())
+    # print(f"CacheData Contents: {repr(cacheData)}")  # Print in a raw format to debug
+    # print ("DEBUGGING STATEMENT ^^^\n")
     # ~~~~ END CODE INSERT ~~~~
     cacheFile.close()
     print ('Sent to the client:')
-    print ('> ' + cacheData)
+    print ('> ' + ''.join(cacheData)) #Had to change this because of can't concatenate list to str error
   except:
     # cache miss.  Get resource from origin server
     originServerSocket = None
@@ -190,10 +191,28 @@ while True:
 
       # Get the response from the origin server
       # ~~~~ INSERT CODE ~~~~
+      originServerResponse = b""
+      while True:
+        chunk = originServerSocket.recv(4096)
+        if not chunk:
+          break
+        originServerResponse += chunk
+      
+      print ("Response Received from origin server\n")
       # ~~~~ END CODE INSERT ~~~~
 
       # Send the response to the client
       # ~~~~ INSERT CODE ~~~~
+      #Parsing for debugging purposes
+      originServerResponseStr = originServerResponse.decode('utf-8', errors="ignore")
+      header_end = originServerResponseStr.find("\r\n\r\n") + 4
+      responseHeaders = originServerResponseStr[:header_end]
+      responseBody = originServerResponseStr[header_end:]
+      print (responseHeaders)
+      print ('\n')
+      print (responseBody)
+
+      clientSocket.sendall(originServerResponse)
       # ~~~~ END CODE INSERT ~~~~
 
       # Create a new file in the cache for the requested file.
@@ -205,6 +224,7 @@ while True:
 
       # Save origin server response in the cache file
       # ~~~~ INSERT CODE ~~~~
+      cacheFile.write(originServerResponse)
       # ~~~~ END CODE INSERT ~~~~
       cacheFile.close()
       print ('cache file closed')
@@ -212,7 +232,7 @@ while True:
       # finished communicating with origin server - shutdown socket writes
       print ('origin response received. Closing sockets')
       originServerSocket.close()
-       
+      
       clientSocket.shutdown(socket.SHUT_WR)
       print ('client socket shutdown for writing')
     except OSError as err:

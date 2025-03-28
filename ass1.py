@@ -167,14 +167,15 @@ while True:
       # originServerRequestHeader is the second line in the request
       # ~~~~ INSERT CODE ~~~~
       originServerRequest = f"{method} {resource} HTTP/1.1\r\n"
-      originServerHeader = f"Host: {hostname}\n"
-      originServerHeader += f"User-Agent: Python/requests"
-      originServerHeader += "Accept: */*"
-      originServerHeader += "Connection: close"
+      originServerRequestHeader = f"Host: {hostname}\r\n"
+      originServerRequestHeader += f"User-Agent: Python/requests\r\n"
+      originServerRequestHeader += "Accept: */*\r\n"
+      originServerRequestHeader += "Connection: close"
+
       # ~~~~ END CODE INSERT ~~~~
 
       # Construct the request to send to the origin server
-      request = originServerRequest + '\r\n' + originServerRequestHeader + '\r\n\r\n'
+      request = originServerRequest + originServerRequestHeader + '\r\n\r\n'
 
       # Request the web resource from origin server
       print ('Forwarding request to origin server:')

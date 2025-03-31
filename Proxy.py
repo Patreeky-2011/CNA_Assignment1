@@ -212,21 +212,55 @@ while True:
       status_line = responseHeaders.split("\r\n")[0]  # Example: "HTTP/1.1 301 Moved Permanently"
       status_code = int(status_line.split(" ")[1])  # Extract the status code
 
-      if status_code in [301, 302]:  
+      status_line = responseHeaders.split("\r\n")[0]  # Example: "HTTP/1.1 301 Moved Permanently"
+      status_code = int(status_line.split(" ")[1])  # Extract the status code
+
+      ## 🔵 HANDLE REDIRECTS (301 & 302)
+      if status_code in [301, 302]:
           location_match = re.search(r"Location: (.+?)\r\n", responseHeaders, re.IGNORECASE)
           if location_match:
               new_url = location_match.group(1)
               print(f"Redirecting to: {new_url}")
 
-              # Update the hostname and resource
-              new_uri = re.sub('^(/?)http(s?)://', '', new_url, count=1)
+              new_uri = re.sub(r'^(/?)http(s?)://', '', new_url, count=1)
               new_parts = new_uri.split('/', 1)
               hostname = new_parts[0]
               resource = '/' + new_parts[1] if len(new_parts) == 2 else '/'
 
-              # Close the existing connection
               originServerSocket.close()
-              continue
+              print(f"Reconnecting to new location: {hostname}{resource}")
+
+              try:
+                  originServerSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                  address = socket.gethostbyname(hostname)
+                  originServerSocket.connect((address, 80))
+                  
+                  originServerRequest = f"{method} {resource} HTTP/1.1\r\n"
+                  originServerRequestHeader = f"Host: {hostname}\r\n"
+                  originServerRequestHeader += "User-Agent: Python/requests\r\n"
+                  originServerRequestHeader += "Accept: */*\r\n"
+                  originServerRequestHeader += "Connection: close\r\n\r\n"
+
+                  originServerSocket.sendall((originServerRequest + originServerRequestHeader).encode())
+                  continue  
+
+              except OSError as err:
+                  print(f"Failed to connect to {hostname}: {err.strerror}")
+
+      ## HANDLE 404 NOT FOUND
+      elif status_code == 404:
+          print("Origin server returned 404 Not Found.")
+
+          error_response = "HTTP/1.1 404 Not Found\r\n"
+          error_response += "Content-Type: text/html\r\n"
+          error_response += "Content-Length: 46\r\n"
+          error_response += "\r\n"
+          error_response += "<html><body><h1>404 Not Found</h1></body></html>"
+
+          clientSocket.sendall(error_response.encode())
+          clientSocket.close()
+          print("Sent 404 response to client")
+          continue
 
       clientSocket.sendall(originServerResponse)
       # ~~~~ END CODE INSERT ~~~~

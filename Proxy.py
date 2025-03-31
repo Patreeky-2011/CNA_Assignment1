@@ -209,9 +209,24 @@ while True:
       header_end = originServerResponseStr.find("\r\n\r\n") + 4
       responseHeaders = originServerResponseStr[:header_end]
       responseBody = originServerResponseStr[header_end:]
-      print (responseHeaders)
-      print ('\n')
-      print (responseBody)
+      status_line = responseHeaders.split("\r\n")[0]  # Example: "HTTP/1.1 301 Moved Permanently"
+      status_code = int(status_line.split(" ")[1])  # Extract the status code
+
+      if status_code in [301, 302]:  
+          location_match = re.search(r"Location: (.+?)\r\n", responseHeaders, re.IGNORECASE)
+          if location_match:
+              new_url = location_match.group(1)
+              print(f"Redirecting to: {new_url}")
+
+              # Update the hostname and resource
+              new_uri = re.sub('^(/?)http(s?)://', '', new_url, count=1)
+              new_parts = new_uri.split('/', 1)
+              hostname = new_parts[0]
+              resource = '/' + new_parts[1] if len(new_parts) == 2 else '/'
+
+              # Close the existing connection
+              originServerSocket.close()
+              continue
 
       clientSocket.sendall(originServerResponse)
       # ~~~~ END CODE INSERT ~~~~
